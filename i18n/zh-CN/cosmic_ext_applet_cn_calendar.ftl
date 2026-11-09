@@ -1,0 +1,11 @@
+app-title = 日历
+app-comment = An application for the COSMIC™ desktop
+app-keywords =
+about = 关于
+view = 视图
+welcome = Welcome to COSMIC! ✨
+page-id = Page { $num }
+git-description = Git commit {$hash} on {$date}
+show-cn-calendar = 农历
+show-time-second = 秒数
+show-cn-holiday = 假期

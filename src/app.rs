@@ -20,7 +20,11 @@ pub struct AppModel {
     /// Configuration data that persists between application runs.
     config: Config,
     /// Example row toggler.
-    example_row: bool,
+    show_cn_calendar: bool,
+    show_time_second: bool,
+    show_cn_holiday: bool,
+
+    time_str: String,
 }
 
 /// Messages emitted by the application and its widgets.
@@ -31,6 +35,8 @@ pub enum Message {
     SubscriptionChannel,
     UpdateConfig(Config),
     ToggleExampleRow(bool),
+
+    UpdateTimeStr(),
 }
 
 /// Create a COSMIC application from the app model
@@ -91,9 +97,13 @@ impl cosmic::Application for AppModel {
     /// This view should emit messages to toggle the applet's popup window, which will
     /// be drawn using the `view_window` method.
     fn view(&self) -> Element<'_, Self::Message> {
+        let content = cosmic::widget::text(self.time_str.as_str())
+            .width(cosmic::iced::Length::Fixed(120.0)) // 或 Shrink 配合足够长的文本
+            .align_x(cosmic::iced::alignment::Horizontal::Center);
+
         self.core
             .applet
-            .icon_button("display-symbolic")
+            .button_from_element(content, false) // 第二个参数按需选择
             .on_press(Message::TogglePopup)
             .into()
     }
@@ -102,11 +112,19 @@ impl cosmic::Application for AppModel {
     /// multiple poups, you may match the id parameter to determine which popup to
     /// create a view for.
     fn view_window(&self, _id: Id) -> Element<'_, Self::Message> {
-        let content_list = widget::list_column().add(widget::settings::item(
-            fl!("example-row"),
-            widget::toggler(self.example_row).on_toggle(Message::ToggleExampleRow),
-        ));
-
+        let content_list = widget::list_column()
+            .add(widget::settings::item(
+                fl!("show-cn-calendar"),
+                widget::toggler(self.show_cn_calendar).on_toggle(Message::ToggleExampleRow),
+            ))
+            .add(widget::settings::item(
+                fl!("show-time-second"),
+                widget::toggler(self.show_time_second).on_toggle(Message::ToggleExampleRow),
+            ))
+            .add(widget::settings::item(
+                fl!("show-cn-holiday"),
+                widget::toggler(self.show_cn_holiday).on_toggle(Message::ToggleExampleRow),
+            ));
         self.core.applet.popup_container(content_list).into()
     }
 
@@ -120,17 +138,8 @@ impl cosmic::Application for AppModel {
         struct MySubscription;
 
         Subscription::batch(vec![
-            // Create a subscription which emits updates through a channel.
-            Subscription::run(|| {
-                cosmic::iced::stream::channel(
-                    4,
-                    move |mut channel: futures::channel::mpsc::Sender<_>| async move {
-                        _ = channel.send(Message::SubscriptionChannel).await;
-
-                        futures::future::pending().await
-                    },
-                )
-            }),
+            cosmic::iced::time::every(std::time::Duration::from_secs(1))
+                .map(|_| Message::UpdateTimeStr()),
             // Watch for application configuration changes.
             self.core()
                 .watch_config::<Config>(Self::APP_ID)
@@ -157,7 +166,7 @@ impl cosmic::Application for AppModel {
             Message::UpdateConfig(config) => {
                 self.config = config;
             }
-            Message::ToggleExampleRow(toggled) => self.example_row = toggled,
+            Message::ToggleExampleRow(toggled) => self.show_cn_calendar = toggled,
             Message::TogglePopup => {
                 return if let Some(p) = self.popup.take() {
                     destroy_popup(p)
@@ -183,6 +192,9 @@ impl cosmic::Application for AppModel {
                 if self.popup.as_ref() == Some(&id) {
                     self.popup = None;
                 }
+            }
+            Message::UpdateTimeStr() => {
+                self.time_str = jiff::Zoned::now().strftime("%H:%M:%S").to_string();
             }
         }
         Task::none()

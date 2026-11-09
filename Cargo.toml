@@ -13,6 +13,8 @@ xdgen = "0.1"
 i18n-embed-fl = "0.10"
 rust-embed = "8.11"
 tokio = { version = "1.52.0", features = ["full"] }
+jiff = "0.2"
+
 
 [dependencies.i18n-embed]
 version = "0.16"

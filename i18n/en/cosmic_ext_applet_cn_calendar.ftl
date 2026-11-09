@@ -6,4 +6,6 @@ view = View
 welcome = Welcome to COSMIC! ✨
 page-id = Page { $num }
 git-description = Git commit {$hash} on {$date}
-example-row = Example Row
+show-cn-calendar = Show Chinese Calendar
+show-time-second = Show Time Second
+show-cn-holiday = Show Chinese Holiday
