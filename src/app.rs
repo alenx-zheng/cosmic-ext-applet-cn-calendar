@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
 use crate::config::Config;
 use crate::fl;
+use crate::holiday::DayKind;
+use crate::holiday::HolidayCalendar;
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::platform_specific::shell::wayland::commands::popup::{destroy_popup, get_popup};
-use cosmic::iced::{Alignment, Length, Limits, Subscription, window::Id,widget::stack};
+use cosmic::iced::{Alignment, Length, Limits, Subscription, widget::stack, window::Id};
 use cosmic::prelude::*;
+use cosmic::widget::autosize;
 use cosmic::widget::{
     self, button, column, container, divider, grid, icon, row, space, text, toggler,
 };
@@ -13,10 +16,9 @@ use jiff::{
     ToSpan, Zoned,
     civil::{Date, Weekday},
 };
+use std::sync::LazyLock;
 use tyme4rs::tyme::lunar::LunarDay;
 use tyme4rs::tyme::solar::SolarDay;
-use crate::holiday::HolidayCalendar;
-use crate::holiday::DayKind;
 #[derive(Default)]
 pub struct AppModel {
     core: cosmic::Core,
@@ -52,6 +54,9 @@ const LUNAR_DAY_CN: [&str; 30] = [
     "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四",
     "廿五", "廿六", "廿七", "廿八", "廿九", "三十",
 ];
+
+static AUTOSIZE_MAIN_ID: LazyLock<cosmic::widget::Id> =
+    LazyLock::new(|| cosmic::widget::Id::new("autosize-main"));
 pub fn format_lunar(lunar: &LunarDay) -> String {
     let lunar_month = lunar.get_month();
     let is_leap = lunar_month < 0;
@@ -164,17 +169,19 @@ impl AppModel {
             };
             let is_month = date.first_of_month() == self.date_selected.first_of_month();
 
-
-
             let kind = self.holiday_calendar.kind(date);
             let badge = match kind {
-                Some(DayKind::Holiday) => Some(("休", cosmic::iced::Color::from_rgb(0.85, 0.2, 0.2))),
-                Some(DayKind::Workday) => Some(("班", cosmic::iced::Color::from_rgb(0.2, 0.45, 0.85))),
+                Some(DayKind::Holiday) => {
+                    Some(("休", cosmic::iced::Color::from_rgb(0.85, 0.2, 0.2)))
+                }
+                Some(DayKind::Workday) => {
+                    Some(("班", cosmic::iced::Color::from_rgb(0.2, 0.45, 0.85)))
+                }
                 None => None,
             };
 
-
-            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge {
+            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge
+            {
                 let badge_widget = container(text(badge_text).size(9))
                     .style(move |_theme| cosmic::iced::widget::container::Style {
                         text_color: Some(badge_color),
@@ -284,11 +291,22 @@ impl cosmic::Application for AppModel {
             .width(Length::Shrink)
             .align_x(cosmic::iced::alignment::Horizontal::Center);
 
-        self.core
-            .applet
-            .button_from_element(content, false)
-            .on_press(Message::TogglePopup)
-            .into()
+        let horizontal = matches!(
+            self.core.applet.anchor,
+            cosmic::applet::cosmic_panel_config::PanelAnchor::Top
+                | cosmic::applet::cosmic_panel_config::PanelAnchor::Bottom
+        );
+
+        let button = button::custom(content)
+            .padding(if horizontal {
+                [0, self.core.applet.suggested_padding(true).0]
+            } else {
+                [self.core.applet.suggested_padding(true).0, 0]
+            })
+            .on_press_down(Message::TogglePopup)
+            .class(cosmic::theme::Button::AppletIcon);
+
+        autosize::autosize(button, AUTOSIZE_MAIN_ID.clone()).into()
     }
 
     fn view_window(&self, _id: Id) -> Element<'_, Self::Message> {
@@ -366,8 +384,6 @@ impl cosmic::Application for AppModel {
         } else {
             column![]
         };
-
-
 
         let content_list = column![
             row![

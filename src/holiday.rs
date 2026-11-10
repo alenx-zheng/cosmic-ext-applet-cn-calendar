@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde::Deserialize;
+use std::collections::HashMap;
 
 const HOLIDAY_FILES: &[(i32, &str)] = &[
     (2026, include_str!("../data/holidays/2026.json")),
