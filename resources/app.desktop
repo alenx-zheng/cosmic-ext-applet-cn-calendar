@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Cosmic Ext Applet Cn Calendar
-Comment=An application for the COSMIC™ desktop
+Comment=A Chinese Calendar For Cosmic
 Type=Application
 Icon=com.github.alenx-zheng.cosmic-ext-applet-cn-calendar
 Exec=cosmic-ext-applet-cn-calendar %F

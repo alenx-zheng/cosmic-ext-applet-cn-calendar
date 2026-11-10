@@ -1,5 +1,5 @@
 app-title = Cosmic Ext Applet Cn Calendar
-app-comment = An Chinese Calendar For Cosmic
+app-comment = A Chinese Calendar For Cosmic
 app-keywords =
 about = About
 view = View
