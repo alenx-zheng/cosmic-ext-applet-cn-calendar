@@ -41,6 +41,7 @@ pub enum Message {
     ToggleShow24Hours(bool),
     ToggleShowHoliday(bool),
     ToggleSettings,
+    SelectDay(i8),
     PreviousMonth,
     NextMonth,
 }
@@ -159,12 +160,15 @@ impl AppModel {
             } else {
                 cosmic::theme::Button::Text
             };
-
-            let btn = button::custom(text(label).apply(container).center(Length::Fill))
+            let is_month = date.first_of_month() == self.date_selected.first_of_month();
+            let mut btn = button::custom(text(label).apply(container).center(Length::Fill))
                 .class(style)
                 .height(Length::Fixed(44.0))
                 .width(Length::Fixed(44.0));
 
+            if is_month {
+                btn = btn.on_press(Message::SelectDay(date.day()));
+            }
             calendar = calendar.push(btn);
         }
         calendar
@@ -270,7 +274,7 @@ impl cosmic::Application for AppModel {
             let lunar_day = solar_day.get_lunar_day();
             let mut display = lunar_day.to_string();
             if let Some(festival) = lunar_day.get_festival() {
-                display = format!("{} {}", display, festival);
+                display = format!("{}", festival);
             }
             Some(display)
         } else {
@@ -390,6 +394,12 @@ impl cosmic::Application for AppModel {
             }
             Message::ToggleSettings => {
                 self.show_settings = !self.show_settings;
+                Task::none()
+            }
+            Message::SelectDay(day) => {
+                if let Ok(date) = self.date_selected.with().day(day).build() {
+                    self.date_selected = date;
+                }
                 Task::none()
             }
             Message::PreviousMonth => {
