@@ -1,5 +1,5 @@
 app-title = 日历
-app-comment = An application for the COSMIC™ desktop
+app-comment = 基于Cosmic的中文日历
 app-keywords =
 about = 关于
 view = 视图
