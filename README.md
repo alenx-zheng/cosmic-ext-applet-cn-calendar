@@ -1,43 +1,38 @@
-# Cosmic Ext Applet Cn Calendar
+# Cosmic Ext Applet: CN Calendar (中国农历日历)
 
-An application for the COSMIC™ desktop
+一个专为 [COSMIC™ 桌面环境](https://system76.com/cosmic) 开发的轻量级、高颜值的日历 Applet 插件。除了基础的时间显示，它还深度集成了中国农历、法定节假日调休标记以及本地化时间格式。
 
-## Installation
+## 🌟 核心特性
 
-A [justfile](./justfile) is included by default for the [casey/just][just] command runner.
+- **基础时间显示**：支持在顶栏显示完整的日期与时间，支持 12/24 小时制切换，并可选择是否显示秒数。
+- **中国农历集成**：可选在顶栏及日历弹窗中显示农历日期、传统节日（如春节、中秋）及二十四节气。
+- **法定节假日与调休标记**：自动在日历网格中标记“休”（节假日）与“班”（调休工作日），使用醒目的右上角角标展示，包含 2026 及 2027 年官方安排。
+- **相对日期计算**：选择非当天的日期时，会自动显示“xx天后”或“xx天前”，方便规划日程。
+- **高度可定制**：弹窗内提供设置面板，可自由开关农历、秒数、节假日标记、24小时制等功能。
+- **多语言支持**：界面与日期格式无缝接入系统本地化（i18n）。
+- **完美的 UI 适配**：自适应面板尺寸（Autosize），无论水平还是垂直面板，均能完美撑开并展示完整信息，周末日期自动灰度显示。
 
-- `just` builds the application with the default `just build-release` recipe
-- `just run` builds and runs the application
-- `just install` installs the project into the system
-- `just vendor` creates a vendored tarball
-- `just build-vendored` compiles with vendored dependencies from that tarball
-- `just check` runs clippy on the project to check for linter warnings
-- `just check-json` can be used by IDEs that support LSP
+## 📸 界面预览
 
-## Translators
+|                 完整农历与节假日展示                 |                 相对日期计算与节假日角标                 |                 顶栏简洁模式                 |
+| :--------------------------------------------------: | :------------------------------------------------------: | :------------------------------------------: |
+| ![完整农历与节假日展示](resources/screenshots/1.png) | ![相对日期计算与节假日角标](resources/screenshots/2.png) | ![顶栏简洁模式](resources/screenshots/3.png) |
 
-[Fluent][fluent] is used for localization of the software. Fluent's translation files are found in the [i18n directory](./i18n). New translations may copy the [English (en) localization](./i18n/en) of the project, rename `en` to the desired [ISO 639-1 language code][iso-codes], and then translations can be provided for each [message identifier][fluent-guide]. If no translation is necessary, the message may be omitted.
+## 🛠️ 编译与安装
 
-## Packaging
+### 前置依赖
 
-If packaging for a Linux distribution, vendor dependencies locally with the `vendor` rule, and build with the vendored sources using the `build-vendored` rule. When installing files, use the `rootdir` and `prefix` variables to change installation paths.
+在编译此项目之前，请确保你的系统已经安装了 Rust 环境以及 COSMIC 桌面环境所需的编译依赖：
 
-```sh
-just vendor
-just build-vendored
-just rootdir=debian/cosmic-ext-applet-cn-calendar prefix=/usr install
+**For Ubuntu / Pop!\_OS:**
+
+```bash
+sudo apt update
+sudo apt install build-essential git just pkg-config libxkbcommon-dev libwayland-dev libssl-dev
 ```
 
-It is recommended to build a source tarball with the vendored dependencies, which can typically be done by running `just vendor` on the host system before it enters the build environment.
+**For Arch linux**
 
-## Developers
-
-Developers should install [rustup][rustup] and configure their editor to use [rust-analyzer][rust-analyzer].
-
-[fluent]: https://projectfluent.org/
-[fluent-guide]: https://projectfluent.org/fluent/guide/hello.html
-[iso-codes]: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-[just]: https://github.com/casey/just
-[rustup]: https://rustup.rs/
-[rust-analyzer]: https://rust-analyzer.github.io/
-[sccache]: https://github.com/mozilla/sccache
+```bash
+sudo pacman -S base-devel git just pkg-config libxkbcommon wayland openssl
+```
