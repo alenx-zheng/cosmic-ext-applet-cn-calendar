@@ -444,10 +444,15 @@ impl cosmic::Application for AppModel {
         ]
         .padding([8, 0]);
 
-        self.core
-            .applet
-            .popup_container(container(content_list))
-            .into()
+        let themed_bg = container(content_list).style(|theme| {
+            let mut container_color = theme.current_container().clone();
+            container_color.base.alpha = 1.0;
+            cosmic::iced::widget::container::Style {
+                background: Some(container_color.base.into()),
+                ..Default::default()
+            }
+        });
+        self.core.applet.popup_container(themed_bg).into()
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {

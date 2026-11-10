@@ -8,7 +8,6 @@ const HOLIDAY_FILES: &[(i32, &str)] = &[
 
 #[derive(Debug, Deserialize)]
 struct YearHolidays {
-    year: i32,
     holidays: Vec<HolidayEntry>,
     workdays: Vec<HolidayEntry>,
 }
@@ -16,7 +15,6 @@ struct YearHolidays {
 #[derive(Debug, Deserialize)]
 struct HolidayEntry {
     date: String,
-    name: String,
 }
 impl Default for HolidayCalendar {
     fn default() -> Self {
