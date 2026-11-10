@@ -58,7 +58,9 @@ Compile using cargo in release mode:
 cargo build --release
 ```
 
-(Note: If you have just installed, you can also run just build-release) 3. Install to system
+(Note: If you have just installed, you can also run just build-release)
+
+3. Install to system
 
 After compilation, install the executable, desktop file, and icons to the user directory:
 
@@ -143,7 +145,9 @@ cd cosmic-ext-applet-cn-calendar
 cargo build --release
 ```
 
-(注意：如果你安装了 just，也可以直接运行 just build-release) 3. 安装到系统
+(注意：如果你安装了 just，也可以直接运行 just build-release)
+
+3. 安装到系统
 
 编译完成后，需要将可执行文件和相关的桌面配置文件、图标等安装到用户目录：
 
