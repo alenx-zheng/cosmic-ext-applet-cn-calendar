@@ -13,3 +13,4 @@ show-24-hours = 24小时
 time-am = 上午
 time-pm = 下午
 date-format = %Y年%m月%d日
+date-format-short = %m月%d日

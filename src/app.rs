@@ -180,7 +180,7 @@ impl AppModel {
                 None => None,
             };
 
-            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge
+            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge && self.config.show_cn_holiday
             {
                 let badge_widget = container(text(badge_text).size(9))
                     .style(move |_theme| cosmic::iced::widget::container::Style {
@@ -275,14 +275,15 @@ impl cosmic::Application for AppModel {
             fl!("time-pm")
         };
 
+        let date_fmt = fl!("date-format-short");
         let fmt = if self.config.show_time_second && self.config.show_24_hours {
-            "%Y-%m-%d %H:%M:%S".to_string()
+            format!("{} %H:%M:%S", date_fmt)
         } else if self.config.show_time_second && !self.config.show_24_hours {
-            format!("%Y-%m-%d {} %I:%M:%S ", period)
+            format!("{} {} %I:%M:%S", date_fmt, period)
         } else if !self.config.show_time_second && self.config.show_24_hours {
-            "%Y-%m-%d %H:%M".to_string()
+            format!("{} %H:%M", date_fmt)
         } else {
-            format!("%Y-%m-%d {} %I:%M ", period)
+            format!("{} {} %I:%M", date_fmt, period)
         };
 
         let time_str = self.now.strftime(&fmt).to_string();
