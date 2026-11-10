@@ -12,3 +12,4 @@ show-cn-holiday = Show Chinese Holiday
 show-24-hours = Show 24 Hours
 time-am = AM
 time-pm = PM
+date-format = %Y-%m-%d

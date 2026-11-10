@@ -249,7 +249,8 @@ impl cosmic::Application for AppModel {
         let Spacing {
             space_xxs, space_s, ..
         } = cosmic::theme::active().cosmic().spacing;
-        let date_str = self.date_selected.strftime("%Y年%m月").to_string();
+        let date_fmt = fl!("date-format");
+        let date_str = self.date_selected.strftime(&date_fmt).to_string();
 
         let month_controls = row![
             button::icon(icon::from_name("go-previous-symbolic"))
@@ -260,7 +261,21 @@ impl cosmic::Application for AppModel {
                 .on_press(Message::NextMonth)
         ]
         .spacing(8);
-
+        let lunar_str = if self.config.show_cn_calendar {
+            let solar_day = SolarDay::from_ymd(
+                self.date_selected.year() as isize,
+                self.date_selected.month() as usize,
+                self.date_selected.day() as usize,
+            );
+            let lunar_day = solar_day.get_lunar_day();
+            let mut display = lunar_day.to_string();
+            if let Some(festival) = lunar_day.get_festival() {
+                display = format!("{} {}", display, festival);
+            }
+            Some(display)
+        } else {
+            None
+        };
         let settings_btn = button::icon(icon::from_name("emblem-system-symbolic"))
             .padding(8)
             .on_press(Message::ToggleSettings)
@@ -315,11 +330,13 @@ impl cosmic::Application for AppModel {
             .align_y(Alignment::Center)
             .padding([12, 20]),
             settings_content,
-            column![
-                text(date_str).size(18),
-                self.calendar_grid().padding([0, 12].into())
-            ]
-            .spacing(8),
+            {
+                let mut date_column = column![text(date_str).size(18)].spacing(4);
+                if let Some(lunar) = lunar_str {
+                    date_column = date_column.push(text::body(lunar).size(14));
+                }
+                column![date_column, self.calendar_grid().padding([0, 12].into())].spacing(8)
+            },
         ]
         .padding([8, 0]);
 

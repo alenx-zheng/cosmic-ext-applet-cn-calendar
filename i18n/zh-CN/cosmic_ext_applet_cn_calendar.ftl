@@ -12,3 +12,4 @@ show-cn-holiday = 假期
 show-24-hours = 24小时
 time-am = 上午
 time-pm = 下午
+date-format = %Y年%m月%d日
