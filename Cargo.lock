@@ -955,6 +955,8 @@ dependencies = [
  "jiff",
  "libcosmic",
  "rust-embed",
+ "serde",
+ "serde_json",
  "tokio",
  "tyme4rs",
  "xdgen",

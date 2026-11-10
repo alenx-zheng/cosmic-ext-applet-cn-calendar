@@ -4,7 +4,7 @@ use crate::fl;
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::platform_specific::shell::wayland::commands::popup::{destroy_popup, get_popup};
-use cosmic::iced::{Alignment, Length, Limits, Subscription, window::Id};
+use cosmic::iced::{Alignment, Length, Limits, Subscription, window::Id,widget::stack};
 use cosmic::prelude::*;
 use cosmic::widget::{
     self, button, column, container, divider, grid, icon, row, space, text, toggler,
@@ -15,7 +15,8 @@ use jiff::{
 };
 use tyme4rs::tyme::lunar::LunarDay;
 use tyme4rs::tyme::solar::SolarDay;
-
+use crate::holiday::HolidayCalendar;
+use crate::holiday::DayKind;
 #[derive(Default)]
 pub struct AppModel {
     core: cosmic::Core,
@@ -28,6 +29,7 @@ pub struct AppModel {
     now: Zoned,
     date_today: Date,
     date_selected: Date,
+    holiday_calendar: HolidayCalendar,
 }
 
 #[derive(Debug, Clone)]
@@ -161,7 +163,46 @@ impl AppModel {
                 cosmic::theme::Button::Text
             };
             let is_month = date.first_of_month() == self.date_selected.first_of_month();
-            let mut btn = button::custom(text(label).apply(container).center(Length::Fill))
+
+
+
+            let kind = self.holiday_calendar.kind(date);
+            let badge = match kind {
+                Some(DayKind::Holiday) => Some(("休", cosmic::iced::Color::from_rgb(0.85, 0.2, 0.2))),
+                Some(DayKind::Workday) => Some(("班", cosmic::iced::Color::from_rgb(0.2, 0.45, 0.85))),
+                None => None,
+            };
+
+
+            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge {
+                let badge_widget = container(text(badge_text).size(9))
+                    .style(move |_theme| cosmic::iced::widget::container::Style {
+                        text_color: Some(badge_color),
+                        ..Default::default()
+                    })
+                    .padding([1, 2]);
+                stack![
+                    container(text(label).apply(container).center(Length::Fill))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .align_x(Alignment::Center)
+                        .align_y(Alignment::Center),
+                    container(badge_widget)
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .align_x(Alignment::End)
+                        .align_y(Alignment::Start),
+                ]
+                .into()
+            } else {
+                container(text(label).apply(container).center(Length::Fill))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center)
+                    .into()
+            };
+            let mut btn = button::custom(cell_content)
                 .class(style)
                 .height(Length::Fixed(44.0))
                 .width(Length::Fixed(44.0));
@@ -210,6 +251,7 @@ impl cosmic::Application for AppModel {
             now,
             date_today: today,
             date_selected: today,
+            holiday_calendar: HolidayCalendar::load_all(),
         };
 
         (app, Task::none())
@@ -324,6 +366,8 @@ impl cosmic::Application for AppModel {
         } else {
             column![]
         };
+
+
 
         let content_list = column![
             row![
