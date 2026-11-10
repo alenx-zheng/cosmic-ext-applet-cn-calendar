@@ -287,19 +287,39 @@ impl cosmic::Application for AppModel {
 
         let time_str = self.now.strftime(&fmt).to_string();
 
-        let content = widget::text(time_str)
-            .width(Length::Shrink)
-            .align_x(cosmic::iced::alignment::Horizontal::Center);
-
         let horizontal = matches!(
             self.core.applet.anchor,
             cosmic::applet::cosmic_panel_config::PanelAnchor::Top
                 | cosmic::applet::cosmic_panel_config::PanelAnchor::Bottom
         );
 
+        let content: Element<'_, Self::Message> = if horizontal {
+            row!(
+                widget::text(time_str).width(Length::Shrink),
+                container(space::vertical().height(Length::Fixed(
+                    (self.core.applet.suggested_size(true).1
+                        + 2 * self.core.applet.suggested_padding(true).1)
+                        as f32
+                )))
+            )
+            .align_y(Alignment::Center)
+            .into()
+        } else {
+            column!(
+                widget::text(time_str).width(Length::Shrink),
+                space::horizontal().width(Length::Fixed(
+                    (self.core.applet.suggested_size(true).0
+                        + 2 * self.core.applet.suggested_padding(true).0)
+                        as f32
+                ))
+            )
+            .align_x(Alignment::Center)
+            .into()
+        };
+
         let button = button::custom(content)
             .padding(if horizontal {
-                [0, self.core.applet.suggested_padding(true).0]
+                [0, self.core.applet.suggested_padding(true).0,]
             } else {
                 [self.core.applet.suggested_padding(true).0, 0]
             })
