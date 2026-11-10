@@ -16,8 +16,8 @@ impl Default for Config {
         Self {
             show_cn_calendar: true,
             show_time_second: false,
-            show_cn_holiday:true,
-            show_24_hours:true
+            show_cn_holiday: true,
+            show_24_hours: true,
         }
     }
 }

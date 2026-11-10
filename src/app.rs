@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-use crate::{fl};
 use crate::config::Config;
+use crate::fl;
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::platform_specific::shell::wayland::commands::popup::{destroy_popup, get_popup};
@@ -44,7 +44,58 @@ pub enum Message {
     PreviousMonth,
     NextMonth,
 }
+const LUNAR_DAY_CN: [&str; 30] = [
+    "初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二",
+    "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四",
+    "廿五", "廿六", "廿七", "廿八", "廿九", "三十",
+];
+pub fn format_lunar(lunar: &LunarDay) -> String {
+    let lunar_month = lunar.get_month();
+    let is_leap = lunar_month < 0;
+    let m_abs = lunar_month.abs() as i8;
 
+    // 优先节日
+    if let Some(festival) = lunar.get_festival() {
+        let full = festival.to_string();
+        let name = full.split_whitespace().last().unwrap_or(&full);
+        return name.to_string();
+    }
+
+    let month_str = match m_abs {
+        1 => "正月",
+        2 => "二月",
+        3 => "三月",
+        4 => "四月",
+        5 => "五月",
+        6 => "六月",
+        7 => "七月",
+        8 => "八月",
+        9 => "九月",
+        10 => "十月",
+        11 => "冬月",
+        12 => "腊月",
+        _ => unreachable!("农历月份范围 1~12"),
+    };
+
+    let day = lunar.get_day();
+    let res: String;
+    if day == 1 {
+        // 初一：显示月份（闰月带上闰）
+        if is_leap {
+            res = format!("闰{}", month_str);
+        } else {
+            res = month_str.to_string();
+        }
+    } else {
+        // 其他日子只显示日
+        if (1..=30).contains(&day) {
+            res = LUNAR_DAY_CN[day - 1].to_string();
+        } else {
+            res = String::new();
+        }
+    }
+    res
+}
 impl AppModel {
     fn save_config(&self) {
         if let Some(helper) = &self.config_helper {
@@ -81,21 +132,22 @@ impl AppModel {
             let date = calendar_first
                 .checked_add(i.days())
                 .expect("valid date in calendar range");
-            let is_current_month = date.month() == self.date_selected.month();
+            //let is_current_month = date.month() == self.date_selected.month();
             let is_today = date == self.date_today;
             let is_selected = date == self.date_selected;
-
-            // 修正：使用 lunar_rust::solar::from_ymd
-            let label = if is_current_month && self.config.show_cn_calendar {
-                let solar_day = SolarDay::from_ymd(
+            let label = if self.config.show_cn_calendar {
+                let cn_calendar_day: LunarDay = SolarDay::from_ymd(
                     date.year() as isize,
                     date.month() as usize,
                     date.day() as usize,
-                );
-
-                let lunar_day = solar_day.get_lunar_day();
-
-                format!("{}\n{}", lunar_day, lunar_day)
+                )
+                .get_lunar_day();
+                let lunar_str = if self.config.show_cn_calendar {
+                    format_lunar(&cn_calendar_day)
+                } else {
+                    String::new()
+                };
+                format!("{}\n{}", date.day(), lunar_str)
             } else {
                 date.day().to_string()
             };
@@ -164,7 +216,6 @@ impl cosmic::Application for AppModel {
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-
         let period = if self.now.hour() < 12 {
             fl!("time-am")
         } else {
