@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+use crate::{fl};
 use crate::config::Config;
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
 use cosmic::cosmic_theme::Spacing;
@@ -38,6 +38,8 @@ pub enum Message {
     UpdateConfig(Config),
     ToggleShowCnCalendar(bool),
     ToggleShowTimeSecond(bool),
+    ToggleShow24Hours(bool),
+    ToggleShowHoliday(bool),
     ToggleSettings,
     PreviousMonth,
     NextMonth,
@@ -162,12 +164,24 @@ impl cosmic::Application for AppModel {
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let fmt = if self.config.show_time_second {
-            "%Y-%m-%d %H:%M:%S"
+
+        let period = if self.now.hour() < 12 {
+            fl!("time-am")
         } else {
-            "%Y-%m-%d %H:%M"
+            fl!("time-pm")
         };
-        let time_str = self.now.strftime(fmt).to_string();
+
+        let fmt = if self.config.show_time_second && self.config.show_24_hours {
+            "%Y-%m-%d %H:%M:%S".to_string()
+        } else if self.config.show_time_second && !self.config.show_24_hours {
+            format!("%Y-%m-%d {} %I:%M:%S ", period)
+        } else if !self.config.show_time_second && self.config.show_24_hours {
+            "%Y-%m-%d %H:%M".to_string()
+        } else {
+            format!("%Y-%m-%d {} %I:%M ", period)
+        };
+
+        let time_str = self.now.strftime(&fmt).to_string();
 
         let content = widget::text(time_str)
             .width(Length::Shrink)
@@ -208,16 +222,30 @@ impl cosmic::Application for AppModel {
         let settings_content = if self.show_settings {
             column![
                 row![
-                    text::body("显示农历"),
+                    text::body(fl!("show-cn-calendar")),
                     space::horizontal().width(Length::Fill),
                     toggler(self.config.show_cn_calendar).on_toggle(Message::ToggleShowCnCalendar)
                 ]
                 .align_y(Alignment::Center)
                 .padding([8, 12]),
                 row![
-                    text::body("显示秒数"),
+                    text::body(fl!("show-time-second")),
                     space::horizontal().width(Length::Fill),
                     toggler(self.config.show_time_second).on_toggle(Message::ToggleShowTimeSecond)
+                ]
+                .align_y(Alignment::Center)
+                .padding([8, 12]),
+                row![
+                    text::body(fl!("show-cn-holiday")),
+                    space::horizontal().width(Length::Fill),
+                    toggler(self.config.show_cn_holiday).on_toggle(Message::ToggleShowHoliday)
+                ]
+                .align_y(Alignment::Center)
+                .padding([8, 12]),
+                row![
+                    text::body(fl!("show-24-hours")),
+                    space::horizontal().width(Length::Fill),
+                    toggler(self.config.show_24_hours).on_toggle(Message::ToggleShow24Hours)
                 ]
                 .align_y(Alignment::Center)
                 .padding([8, 12]),
@@ -274,6 +302,16 @@ impl cosmic::Application for AppModel {
             }
             Message::ToggleShowCnCalendar(val) => {
                 self.config.show_cn_calendar = val;
+                self.save_config();
+                Task::none()
+            }
+            Message::ToggleShowHoliday(val) => {
+                self.config.show_cn_holiday = val;
+                self.save_config();
+                Task::none()
+            }
+            Message::ToggleShow24Hours(val) => {
+                self.config.show_24_hours = val;
                 self.save_config();
                 Task::none()
             }

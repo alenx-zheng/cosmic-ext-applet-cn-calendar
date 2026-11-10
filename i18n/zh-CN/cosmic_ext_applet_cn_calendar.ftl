@@ -9,3 +9,6 @@ git-description = Git commit {$hash} on {$date}
 show-cn-calendar = 农历
 show-time-second = 秒数
 show-cn-holiday = 假期
+show-24-hours = 24小时
+time-am = 上午
+time-pm = 下午
