@@ -180,7 +180,8 @@ impl AppModel {
                 None => None,
             };
 
-            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge && self.config.show_cn_holiday
+            let cell_content: Element<'_, Message> = if let Some((badge_text, badge_color)) = badge
+                && self.config.show_cn_holiday
             {
                 let badge_widget = container(text(badge_text).size(9))
                     .style(move |_theme| cosmic::iced::widget::container::Style {
@@ -320,7 +321,7 @@ impl cosmic::Application for AppModel {
 
         let button = button::custom(content)
             .padding(if horizontal {
-                [0, self.core.applet.suggested_padding(true).0,]
+                [0, self.core.applet.suggested_padding(true).0]
             } else {
                 [self.core.applet.suggested_padding(true).0, 0]
             })
@@ -406,6 +407,18 @@ impl cosmic::Application for AppModel {
             column![]
         };
 
+        // 计算相对今天的天数差
+        let diff_span = self.date_selected - self.date_today;
+        let day_diff = diff_span.get_days();
+
+        let relative_text = if day_diff == 0 {
+            None
+        } else if day_diff > 0 {
+            Some(fl!("days-after", count = day_diff.to_string()))
+        } else {
+            Some(fl!("days-before", count = (-day_diff).to_string()))
+        };
+
         let content_list = column![
             row![
                 settings_btn,
@@ -416,7 +429,13 @@ impl cosmic::Application for AppModel {
             .padding([12, 20]),
             settings_content,
             {
-                let mut date_column = column![text(date_str).size(18)].spacing(4);
+                let mut date_row = row![text(date_str).size(18)].align_y(Alignment::Center);
+                if let Some(rel) = relative_text {
+                    date_row =
+                        date_row.push(text::body(rel).size(12).apply(container).padding([0, 4]));
+                }
+
+                let mut date_column = column![date_row].spacing(4);
                 if let Some(lunar) = lunar_str {
                     date_column = date_column.push(text::body(lunar).size(14));
                 }

@@ -14,3 +14,5 @@ time-am = 上午
 time-pm = 下午
 date-format = %Y年%m月%d日
 date-format-short = %m月%d日
+days-before = { $count }天前
+days-after = { $count }天后

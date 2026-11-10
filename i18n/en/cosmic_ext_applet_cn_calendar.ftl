@@ -14,3 +14,5 @@ time-am = AM
 time-pm = PM
 date-format = %Y-%m-%d
 date-format-short = %m-%d
+days-before = { $count } days ago
+days-after = in { $count } days
